@@ -4,11 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <title>Inscription Réussie</title>
-    <link rel="stylesheet" href="css/mesStyles.css">
+    <link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/css/mesStyles.css">
 </head>
 <body>
     <div class="success-container">
-        <div class="success-icon">✅</div>
+        <div class="success-icon">✓</div>
         <h2>Inscription réussie !</h2>
         <p class="success-message">
             Votre dossier médical a été créé avec succès.<br>
@@ -16,8 +16,15 @@
         </p>
         
         <div class="success-actions">
-            <a href="connexion" class="btn-primary">Se connecter</a>
-            <a href="listeDentistes" class="btn-secondary">Voir les dentistes</a>
+            <a href="<%= request.getContextPath() %>/dentiste?action=list" class="btn-primary">
+                Voir les dentistes disponibles
+            </a>
+            <a href="<%= request.getContextPath() %>/rendezvous" class="btn-secondary">
+                Prendre un rendez-vous
+            </a>
+            <a href="<%= request.getContextPath() %>/connexion" class="btn-link">
+                Se connecter
+            </a>
         </div>
     </div>
 </body>

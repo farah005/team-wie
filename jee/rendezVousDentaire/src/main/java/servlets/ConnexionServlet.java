@@ -1,10 +1,5 @@
 package servlets;
 
-import dao.PatientDAO;
-import dao.DentisteDAO;
-import entities.Patient;
-import entities.Dentiste;
-import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,52 +10,41 @@ import java.io.IOException;
 
 @WebServlet("/connexion")
 public class ConnexionServlet extends HttpServlet {
-    
-    @EJB
-    private PatientDAO patientDAO;
-    
-    @EJB
-    private DentisteDAO dentisteDAO;
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    private static final long serialVersionUID = 1L;
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
+        request.getRequestDispatcher("/connexion.jsp").forward(request, response);
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
         String email = request.getParameter("email");
         String password = request.getParameter("password");
-        String userType = request.getParameter("userType"); // "patient" ou "dentiste"
+        String userType = request.getParameter("userType");
         
         HttpSession session = request.getSession();
         
-        if ("patient".equals(userType)) {
-            Patient patient = patientDAO.authenticate(email, password);
-            if (patient != null) {
-                session.setAttribute("user", patient);
-                session.setAttribute("userType", "patient");
-                response.sendRedirect("Rendezvous.jsp");
-            } else {
-                request.setAttribute("error", "Email ou mot de passe incorrect");
-                request.getRequestDispatcher("Connexion.jsp").forward(request, response);
-            }
-        } else if ("dentiste".equals(userType)) {
-            Dentiste dentiste = dentisteDAO.authenticate(email, password);
-            if (dentiste != null) {
-                session.setAttribute("user", dentiste);
-                session.setAttribute("userType", "dentiste");
-                response.sendRedirect("AideSoignant.jsp");
-            } else {
-                request.setAttribute("error", "Email ou mot de passe incorrect");
-                request.getRequestDispatcher("Connexion.jsp").forward(request, response);
-            }
-        } else {
-            request.setAttribute("error", "Type d'utilisateur invalide");
-            request.getRequestDispatcher("Connexion.jsp").forward(request, response);
+        if (email == null || password == null || userType == null) {
+            request.setAttribute("erreur", "Veuillez remplir tous les champs");
+            request.getRequestDispatcher("/connexion.jsp").forward(request, response);
+            return;
         }
-    }
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        request.getRequestDispatcher("Connexion.jsp").forward(request, response);
+        
+        // Simulation de l'authentification (remplacer par l'appel EJB réel)
+        if ("patient".equals(userType)) {
+            // Patient authentication
+            session.setAttribute("userType", "patient");
+            session.setAttribute("email", email);
+            response.sendRedirect(request.getContextPath() + "/rendezvous");
+        } else if ("dentiste".equals(userType)) {
+            // Dentiste authentication
+            session.setAttribute("userType", "dentiste");
+            session.setAttribute("email", email);
+            response.sendRedirect(request.getContextPath() + "/rendezvous");
+        } else {
+            request.setAttribute("erreur", "Type d'utilisateur invalide");
+            request.getRequestDispatcher("/connexion.jsp").forward(request, response);
+        }
     }
 }

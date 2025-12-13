@@ -5,104 +5,144 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Rendez-vous</title>
-    <link rel="stylesheet" href="css/mesStyles.css">
+    <title>Prise de Rendez-vous</title>
+    <link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/css/mesStyles.css">
 </head>
 <body>
-    <div class="rdv-container">
+    <div class="form-container">
         <h2>Gestion des Rendez-vous</h2>
         
-        <!-- Formulaire de prise de RDV -->
-        <div class="rdv-form-section">
-            <h3>Prendre un nouveau rendez-vous</h3>
-            
-            <% if (request.getAttribute("error") != null) { %>
-                <div class="error-message">
-                    <%= request.getAttribute("error") %>
-                </div>
-            <% } %>
-            
-            <form action="rendezvous" method="post" class="rdv-form">
-                <div class="form-group">
-                    <label for="idDentiste">Choisir un dentiste *</label>
-                    <select name="idDentiste" id="idDentiste" required>
-                        <option value="">Sélectionner un dentiste</option>
-                        <c:forEach var="dentiste" items="${dentistes}">
-                            <option value="${dentiste.idD}">
-                                Dr. ${dentiste.nomD} ${dentiste.prenomD} - ${dentiste.specialiteD}
-                            </option>
-                        </c:forEach>
+        <% if (request.getAttribute("erreur") != null) { %>
+            <div class="error-message">
+                <%= request.getAttribute("erreur") %>
+            </div>
+        <% } %>
+        
+        <% if (request.getAttribute("message") != null) { %>
+            <div class="success-message">
+                <%= request.getAttribute("message") %>
+            </div>
+        <% } %>
+        
+        <!-- Section de recherche -->
+        <div class="search-section">
+            <h3>Rechercher des rendez-vous</h3>
+            <div class="search-options">
+                <form action="<%= request.getContextPath() %>/rendezvous" method="get" class="inline-form">
+                    <input type="hidden" name="action" value="byDate">
+                    <label for="searchDate">Par date :</label>
+                    <input type="date" id="searchDate" name="date">
+                    <button type="submit" class="btn-small">Rechercher</button>
+                </form>
+                
+                <form action="<%= request.getContextPath() %>/rendezvous" method="get" class="inline-form">
+                    <input type="hidden" name="action" value="byStatut">
+                    <label for="searchStatut">Par statut :</label>
+                    <select id="searchStatut" name="statut">
+                        <option value="">Tous</option>
+                        <option value="En attente">En attente</option>
+                        <option value="Confirmé">Confirmé</option>
+                        <option value="Annulé">Annulé</option>
+                        <option value="Terminé">Terminé</option>
                     </select>
+                    <button type="submit" class="btn-small">Rechercher</button>
+                </form>
+                
+                <a href="<%= request.getContextPath() %>/rendezvous?action=list" class="btn-secondary">
+                    Voir tous mes rendez-vous
+                </a>
+            </div>
+        </div>
+        
+        <hr>
+        
+        <!-- Formulaire de prise de rendez-vous -->
+        <div class="appointment-section">
+            <h3>Prendre un nouveau rendez-vous</h3>
+            <form action="<%= request.getContextPath() %>/rendezvous" method="post">
+                <input type="hidden" name="action" value="create">
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="idPatient">ID Patient * :</label>
+                        <input type="number" id="idPatient" name="idPatient" required 
+                               placeholder="Votre identifiant patient">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="idDentiste">Sélectionner un dentiste * :</label>
+                        <select id="idDentiste" name="idDentiste" required>
+                            <option value="">-- Choisir un dentiste --</option>
+                            <!-- Les dentistes seront chargés dynamiquement ou depuis le serveur -->
+                            <option value="1">Dr. Ahmed Ben Ali - Orthodontie</option>
+                            <option value="2">Dr. Salma Karoui - Chirurgie dentaire</option>
+                            <option value="3">Dr. Mohamed Trabelsi - Dentisterie générale</option>
+                        </select>
+                    </div>
                 </div>
                 
                 <div class="form-row">
                     <div class="form-group">
-                        <label for="dateRdv">Date du rendez-vous *</label>
-                        <input type="date" id="dateRdv" name="dateRdv" required>
+                        <label for="dateRv">Date du rendez-vous * :</label>
+                        <input type="date" id="dateRv" name="dateRv" required 
+                               min="<%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date()) %>">
                     </div>
                     
                     <div class="form-group">
-                        <label for="heureRdv">Heure *</label>
-                        <input type="time" id="heureRdv" name="heureRdv" required>
+                        <label for="heureRv">Heure * :</label>
+                        <input type="time" id="heureRv" name="heureRv" required 
+                               min="08:00" max="18:00">
+                        <small class="form-text">Horaires: 08h00 - 18h00</small>
                     </div>
                 </div>
                 
                 <div class="form-group">
-                    <label for="details">Détails / Motif de la consultation</label>
-                    <textarea id="details" name="details" rows="4"></textarea>
+                    <label for="statut">Statut :</label>
+                    <select id="statut" name="statut">
+                        <option value="En attente">En attente</option>
+                        <option value="Confirmé">Confirmé</option>
+                        <option value="Annulé">Annulé</option>
+                    </select>
                 </div>
                 
-                <button type="submit" class="btn-primary">Confirmer le rendez-vous</button>
+                <div class="form-group">
+                    <label for="details">Détails / Motif de consultation :</label>
+                    <textarea id="details" name="details" rows="4" 
+                              placeholder="Décrivez la raison de votre consultation..."></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn-primary">📅 Confirmer le rendez-vous</button>
+                    <button type="reset" class="btn-secondary">Réinitialiser</button>
+                </div>
             </form>
         </div>
         
-        <!-- Liste des RDV existants -->
-        <div class="rdv-list-section">
-            <h3>Mes rendez-vous</h3>
-            
-            <c:choose>
-                <c:when test="${not empty rendezvous}">
-                    <table class="rdv-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Heure</th>
-                                <th>Dentiste</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <c:forEach var="rdv" items="${rendezvous}">
-                                <tr>
-                                    <td>${rdv.dateRv}</td>
-                                    <td>${rdv.heureRv}</td>
-                                    <td>Dr. ${rdv.dentiste.nomD} ${rdv.dentiste.prenomD}</td>
-                                    <td>
-                                        <span class="statut-badge statut-${rdv.statutRv}">
-                                            ${rdv.statutRv}
-                                        </span>
-                                    </td>
-                                    <td class="actions">
-                                        <a href="modifierRendezvous?id=${rdv.idRv}" class="btn-edit">
-                                            Modifier
-                                        </a>
-                                        <a href="modifierRendezvous?id=${rdv.idRv}&action=annuler" 
-                                           class="btn-cancel"
-                                           onclick="return confirm('Êtes-vous sûr de vouloir annuler ce rendez-vous ?')">
-                                            Annuler
-                                        </a>
-                                    </td>
-                                </tr>
-                            </c:forEach>
-                        </tbody>
-                    </table>
-                </c:when>
-                <c:otherwise>
-                    <p class="no-results">Vous n'avez pas encore de rendez-vous.</p>
-                </c:otherwise>
-            </c:choose>
+        <!-- Calendrier visuel (optionnel) -->
+        <div class="calendar-section" style="margin-top: 30px;">
+            <h3>📅 Disponibilités du mois</h3>
+            <div class="calendar-placeholder">
+                <p>Un calendrier interactif peut être intégré ici pour visualiser les créneaux disponibles.</p>
+            </div>
         </div>
     </div>
+    
+    <script>
+        // Validation de l'heure
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var heure = document.getElementById('heureRv').value;
+            if (heure) {
+                var hours = parseInt(heure.split(':')[0]);
+                if (hours < 8 || hours >= 18) {
+                    e.preventDefault();
+                    alert('Les rendez-vous sont disponibles uniquement entre 08h00 et 18h00');
+                }
+            }
+        });
+        
+        // Désactiver les dates passées
+        var today = new Date().toISOString().split('T')[0];
+        document.getElementById('dateRv').setAttribute('min', today);
+    </script>
 </body>
 </html>

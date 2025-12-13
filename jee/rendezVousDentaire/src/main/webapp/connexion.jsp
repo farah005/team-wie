@@ -3,49 +3,69 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Connexion</title>
-    <link rel="stylesheet" href="css/mesStyles.css">
+    <title>connexion</title>
+    <link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/css/mesStyles.css">
 </head>
 <body>
     <div class="connexion-container">
-        <h2>Connexion</h2>
+        <h2>Bienvenue sur notre plateforme</h2>
+        <p>Veuillez sélectionner votre type de compte pour vous connecter</p>
         
-        <% if (request.getAttribute("error") != null) { %>
+        <% if (request.getAttribute("erreur") != null) { %>
             <div class="error-message">
-                <%= request.getAttribute("error") %>
+                <%= request.getAttribute("erreur") %>
             </div>
         <% } %>
         
-        <form action="connexion" method="post" class="connexion-form">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" required>
+        <div class="user-type-selection">
+            <div class="user-card">
+                <h3>Je suis un Patient</h3>
+                <p>Prendre rendez-vous avec un dentiste</p>
+                <a href="<%= request.getContextPath() %>/patient" class="btn-primary">S'inscrire</a>
+                <a href="#" onclick="showLoginForm('patient')" class="btn-secondary">Se connecter</a>
             </div>
             
-            <div class="form-group">
-                <label for="password">Mot de passe:</label>
-                <input type="password" id="password" name="password" required>
+            <div class="user-card">
+                <h3>Je suis un Aide-soignant</h3>
+                <p>Gérer les rendez-vous et consultations</p>
+                <a href="<%= request.getContextPath() %>/dentiste" class="btn-primary">S'inscrire</a>
+                <a href="#" onclick="showLoginForm('dentiste')" class="btn-secondary">Se connecter</a>
             </div>
-            
-            <div class="form-group">
-                <label>Type d'utilisateur:</label>
-                <div class="radio-group">
-                    <input type="radio" id="patient" name="userType" value="patient" checked>
-                    <label for="patient">Patient</label>
-                    
-                    <input type="radio" id="dentiste" name="userType" value="dentiste">
-                    <label for="dentiste">Aide-soignant</label>
-                </div>
-            </div>
-            
-            <button type="submit" class="btn-primary">Se connecter</button>
-        </form>
+        </div>
         
-        <div class="links">
-            <p>Vous n'avez pas de compte ?</p>
-            <a href="inscriptionPatient" class="link">Inscription Patient</a>
-            <a href="listeDentistes" class="link">Espace Aide-soignant</a>
+        <!-- Formulaire de connexion (caché par défaut) -->
+        <div id="loginForm" class="login-form" style="display:none;">
+            <h3>Connexion</h3>
+            <form action="<%= request.getContextPath() %>/connexion" method="post">
+                <input type="hidden" name="userType" id="userType" value="">
+                
+                <div class="form-group">
+                    <label for="email">Email :</label>
+                    <input type="email" id="email" name="email" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Mot de passe :</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                
+                <button type="submit" class="btn-primary">Se connecter</button>
+                <button type="button" onclick="hideLoginForm()" class="btn-secondary">Annuler</button>
+            </form>
         </div>
     </div>
+    
+    <script>
+        function showLoginForm(type) {
+            document.getElementById('userType').value = type;
+            document.getElementById('loginForm').style.display = 'block';
+            document.querySelector('.user-type-selection').style.display = 'none';
+        }
+        
+        function hideLoginForm() {
+            document.getElementById('loginForm').style.display = 'none';
+            document.querySelector('.user-type-selection').style.display = 'flex';
+        }
+    </script>
 </body>
 </html>

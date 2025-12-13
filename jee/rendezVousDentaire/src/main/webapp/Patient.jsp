@@ -4,45 +4,50 @@
 <head>
     <meta charset="UTF-8">
     <title>Inscription Patient</title>
-    <link rel="stylesheet" href="css/mesStyles.css">
+    <link rel="stylesheet" type="text/css" href="<%= request.getContextPath() %>/css/mesStyles.css">
 </head>
 <body>
-    <div class="inscription-container">
+    <div class="form-container">
         <h2>Inscription Patient</h2>
+        <p>Créez votre dossier médical pour prendre rendez-vous facilement</p>
         
-        <% if (request.getAttribute("error") != null) { %>
+        <% if (request.getAttribute("erreur") != null) { %>
             <div class="error-message">
-                <%= request.getAttribute("error") %>
+                <%= request.getAttribute("erreur") %>
             </div>
         <% } %>
         
-        <form action="inscriptionPatient" method="post" class="inscription-form">
+        <form action="<%= request.getContextPath() %>/patient" method="post" enctype="multipart/form-data">
+            <input type="hidden" name="action" value="create">
+            
             <div class="form-row">
                 <div class="form-group">
-                    <label for="nom">Nom *</label>
-                    <input type="text" id="nom" name="nom" required>
+                    <label for="nom">Nom * :</label>
+                    <input type="text" id="nom" name="nom" required maxlength="100">
                 </div>
                 
                 <div class="form-group">
-                    <label for="prenom">Prénom *</label>
-                    <input type="text" id="prenom" name="prenom" required>
+                    <label for="prenom">Prénom * :</label>
+                    <input type="text" id="prenom" name="prenom" required maxlength="100">
                 </div>
-            </div>
-            
-            <div class="form-group">
-                <label for="email">Email *</label>
-                <input type="email" id="email" name="email" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="motDePasse">Mot de passe *</label>
-                <input type="password" id="motDePasse" name="motDePasse" maxlength="10" required>
             </div>
             
             <div class="form-row">
                 <div class="form-group">
-                    <label>Sexe *</label>
-                    <select name="sexe" required>
+                    <label for="email">Email * :</label>
+                    <input type="email" id="email" name="email" required maxlength="100">
+                </div>
+                
+                <div class="form-group">
+                    <label for="dateNaissance">Date de naissance :</label>
+                    <input type="date" id="dateNaissance" name="dateNaissance">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="sexe">Sexe :</label>
+                    <select id="sexe" name="sexe">
                         <option value="">Sélectionner</option>
                         <option value="M">Masculin</option>
                         <option value="F">Féminin</option>
@@ -50,15 +55,8 @@
                 </div>
                 
                 <div class="form-group">
-                    <label for="dateNaissance">Date de naissance</label>
-                    <input type="date" id="dateNaissance" name="dateNaissance">
-                </div>
-            </div>
-            
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Groupe sanguin</label>
-                    <select name="groupeSanguin">
+                    <label for="groupeSanguin">Groupe sanguin :</label>
+                    <select id="groupeSanguin" name="groupeSanguin">
                         <option value="">Sélectionner</option>
                         <option value="A">A</option>
                         <option value="B">B</option>
@@ -66,10 +64,27 @@
                         <option value="AB">AB</option>
                     </select>
                 </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="recouvrement">Recouvrement social :</label>
+                <input type="text" id="recouvrement" name="recouvrement" maxlength="100">
+            </div>
+            
+            <div class="form-group">
+                <label for="photo">Photo de profil :</label>
+                <input type="file" id="photo" name="photo" accept="image/*">
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="mdp">Mot de passe * :</label>
+                    <input type="password" id="mdp" name="mdp" required maxlength="10">
+                </div>
                 
                 <div class="form-group">
-                    <label for="recouvrement">Recouvrement social</label>
-                    <input type="text" id="recouvrement" name="recouvrement">
+                    <label for="confirmMdp">Confirmer mot de passe * :</label>
+                    <input type="password" id="confirmMdp" name="confirmMdp" required maxlength="10">
                 </div>
             </div>
             
@@ -79,9 +94,21 @@
             </div>
         </form>
         
-        <div class="back-link">
-            <a href="connexion">← Retour à la connexion</a>
-        </div>
+        <p class="form-footer">
+            Déjà inscrit ? <a href="<%= request.getContextPath() %>/connexion">Se connecter</a>
+        </p>
     </div>
+    
+    <script>
+        document.querySelector('form').addEventListener('submit', function(e) {
+            var mdp = document.getElementById('mdp').value;
+            var confirmMdp = document.getElementById('confirmMdp').value;
+            
+            if (mdp !== confirmMdp) {
+                e.preventDefault();
+                alert('Les mots de passe ne correspondent pas');
+            }
+        });
+    </script>
 </body>
 </html>

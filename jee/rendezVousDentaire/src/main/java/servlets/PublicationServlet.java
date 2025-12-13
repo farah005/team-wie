@@ -1,243 +1,124 @@
 package servlets;
 
-import dao.PatientDAO;
-import dao.DentisteDAO;
-import dao.RendezvousDAO;
-import dao.ServiceMedicalDAO;
-import entities.Patient;
-import entities.Dentiste;
-import entities.Rendezvous;
-import entities.ServiceMedical;
-import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.MultipartConfig;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 @WebServlet("/publication")
+@MultipartConfig(
+    fileSizeThreshold = 1024 * 1024 * 2, // 2MB
+    maxFileSize = 1024 * 1024 * 10,      // 10MB
+    maxRequestSize = 1024 * 1024 * 50    // 50MB
+)
 public class PublicationServlet extends HttpServlet {
-    
-    @EJB
-    private PatientDAO patientDAO;
-    
-    @EJB
-    private DentisteDAO dentisteDAO;
-    
-    @EJB
-    private RendezvousDAO rendezvousDAO;
-    
-    @EJB
-    private ServiceMedicalDAO serviceDAO;
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    private static final long serialVersionUID = 1L;
+    private static final String UPLOAD_DIRECTORY = "uploads";
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
         String action = request.getParameter("action");
         
-        if (action == null) {
-            action = "statistiques";
-        }
-        
-        switch (action) {
-            case "statistiques":
-                afficherStatistiques(request, response);
-                break;
-            case "patients":
-                listerPatients(request, response);
-                break;
-            case "dentistes":
-                listerDentistes(request, response);
-                break;
-            case "rendezvous":
-                listerRendezvous(request, response);
-                break;
-            case "services":
-                listerServices(request, response);
-                break;
-            default:
-                afficherStatistiques(request, response);
-                break;
-        }
-    }
-    
-    private void afficherStatistiques(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        // Statistiques générales
-        List<Patient> patients = patientDAO.findAll();
-        List<Dentiste> dentistes = dentisteDAO.findAll();
-        List<Rendezvous> rendezvous = rendezvousDAO.findAll();
-        List<ServiceMedical> services = serviceDAO.findAll();
-        
-        // Compter les rendez-vous par statut
-        long rdvEnAttente = rendezvous.stream()
-            .filter(r -> "En attente".equals(r.getStatutRv()))
-            .count();
-        
-        long rdvConfirmes = rendezvous.stream()
-            .filter(r -> "Confirmé".equals(r.getStatutRv()))
-            .count();
-        
-        long rdvTermines = rendezvous.stream()
-            .filter(r -> "Terminé".equals(r.getStatutRv()))
-            .count();
-        
-        long rdvAnnules = rendezvous.stream()
-            .filter(r -> "Annulé".equals(r.getStatutRv()))
-            .count();
-        
-        // Statistiques par sexe (patients)
-        long patientsHommes = patients.stream()
-            .filter(p -> "M".equals(p.getSexeP()))
-            .count();
-        
-        long patientsFemmes = patients.stream()
-            .filter(p -> "F".equals(p.getSexeP()))
-            .count();
-        
-        // Statistiques par groupe sanguin
-        long groupeA = patients.stream()
-            .filter(p -> "A".equals(p.getGroupeSanguinP()))
-            .count();
-        
-        long groupeB = patients.stream()
-            .filter(p -> "B".equals(p.getGroupeSanguinP()))
-            .count();
-        
-        long groupeO = patients.stream()
-            .filter(p -> "O".equals(p.getGroupeSanguinP()))
-            .count();
-        
-        long groupeAB = patients.stream()
-            .filter(p -> "AB".equals(p.getGroupeSanguinP()))
-            .count();
-        
-        // Attribuer les statistiques
-        request.setAttribute("totalPatients", patients.size());
-        request.setAttribute("totalDentistes", dentistes.size());
-        request.setAttribute("totalRendezvous", rendezvous.size());
-        request.setAttribute("totalServices", services.size());
-        
-        request.setAttribute("rdvEnAttente", rdvEnAttente);
-        request.setAttribute("rdvConfirmes", rdvConfirmes);
-        request.setAttribute("rdvTermines", rdvTermines);
-        request.setAttribute("rdvAnnules", rdvAnnules);
-        
-        request.setAttribute("patientsHommes", patientsHommes);
-        request.setAttribute("patientsFemmes", patientsFemmes);
-        
-        request.setAttribute("groupeA", groupeA);
-        request.setAttribute("groupeB", groupeB);
-        request.setAttribute("groupeO", groupeO);
-        request.setAttribute("groupeAB", groupeAB);
-        
-        request.getRequestDispatcher("Publication.jsp").forward(request, response);
-    }
-    
-    private void listerPatients(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        List<Patient> patients = patientDAO.findAll();
-        request.setAttribute("patients", patients);
-        request.setAttribute("action", "patients");
-        request.getRequestDispatcher("Publication.jsp").forward(request, response);
-    }
-    
-    private void listerDentistes(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        List<Dentiste> dentistes = dentisteDAO.findAll();
-        request.setAttribute("dentistes", dentistes);
-        request.setAttribute("action", "dentistes");
-        request.getRequestDispatcher("Publication.jsp").forward(request, response);
-    }
-    
-    private void listerRendezvous(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
-        String statut = request.getParameter("statut");
-        
-        List<Rendezvous> rendezvous;
-        if (statut != null && !statut.isEmpty()) {
-            rendezvous = rendezvousDAO.findByStatut(statut);
+        if ("list".equals(action)) {
+            // Récupérer toutes les publications
+            // List<Publication> publications = publicationService.findAll();
+            // request.setAttribute("publications", publications);
+            request.getRequestDispatcher("/WEB-INF/jsp/Publications.jsp").forward(request, response);
         } else {
-            rendezvous = rendezvousDAO.findAll();
+            // Afficher le formulaire de publication
+            request.getRequestDispatcher("/WEB-INF/jsp/Publication.jsp").forward(request, response);
         }
-        
-        request.setAttribute("rendezvous", rendezvous);
-        request.setAttribute("action", "rendezvous");
-        request.getRequestDispatcher("Publication.jsp").forward(request, response);
     }
-    
-    private void listerServices(HttpServletRequest request, HttpServletResponse response)
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
-        String type = request.getParameter("type");
-        
-        List<ServiceMedical> services;
-        if (type != null && !type.isEmpty()) {
-            services = serviceDAO.findByType(type);
-        } else {
-            services = serviceDAO.findAll();
-        }
-        
-        request.setAttribute("services", services);
-        request.setAttribute("action", "services");
-        request.getRequestDispatcher("Publication.jsp").forward(request, response);
-    }
-    
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
-            throws ServletException, IOException {
-        
         String action = request.getParameter("action");
         
-        if ("recherche".equals(action)) {
-            rechercherPatients(request, response);
-        } else {
-            doGet(request, response);
+        if ("upload".equals(action)) {
+            uploadPublication(request, response);
+        } else if ("delete".equals(action)) {
+            deletePublication(request, response);
         }
     }
     
-    private void rechercherPatients(HttpServletRequest request, HttpServletResponse response)
+    private void uploadPublication(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
-        
-        String critere = request.getParameter("critere");
-        String valeur = request.getParameter("valeur");
-        
-        List<Patient> patients = patientDAO.findAll();
-        
-        if (critere != null && valeur != null && !valeur.isEmpty()) {
-            switch (critere) {
-                case "nom":
-                    patients = patients.stream()
-                        .filter(p -> p.getNomP().toLowerCase().contains(valeur.toLowerCase()))
-                        .toList();
-                    break;
-                case "email":
-                    patients = patients.stream()
-                        .filter(p -> p.getEmailP().toLowerCase().contains(valeur.toLowerCase()))
-                        .toList();
-                    break;
-                case "groupeSanguin":
-                    patients = patients.stream()
-                        .filter(p -> valeur.equals(p.getGroupeSanguinP()))
-                        .toList();
-                    break;
-                case "sexe":
-                    patients = patients.stream()
-                        .filter(p -> valeur.equals(p.getSexeP()))
-                        .toList();
-                    break;
+        try {
+            // Récupérer le fichier uploadé
+            Part filePart = request.getPart("file");
+            String titre = request.getParameter("titre");
+            String description = request.getParameter("description");
+            
+            if (filePart == null || titre == null) {
+                request.setAttribute("erreur", "Veuillez sélectionner un fichier et fournir un titre");
+                request.getRequestDispatcher("/WEB-INF/jsp/Publication.jsp").forward(request, response);
+                return;
+            }
+            
+            String fileName = getFileName(filePart);
+            
+            // Créer le répertoire d'upload s'il n'existe pas
+            String uploadPath = getServletContext().getRealPath("") + File.separator + UPLOAD_DIRECTORY;
+            File uploadDir = new File(uploadPath);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
+            
+            // Sauvegarder le fichier
+            String filePath = uploadPath + File.separator + fileName;
+            filePart.write(filePath);
+            
+            // Créer l'entité Publication
+            // Publication publication = new Publication();
+            // publication.setTitre(titre);
+            // publication.setDescription(description);
+            // publication.setCheminFichier(UPLOAD_DIRECTORY + "/" + fileName);
+            // publication.setDatePublication(new Date());
+            
+            // Appel au service EJB
+            // publicationService.create(publication);
+            
+            request.setAttribute("message", "Publication uploadée avec succès : " + fileName);
+            request.getRequestDispatcher("/WEB-INF/jsp/Publication.jsp").forward(request, response);
+            
+        } catch (Exception e) {
+            request.setAttribute("erreur", "Erreur lors de l'upload : " + e.getMessage());
+            request.getRequestDispatcher("/WEB-INF/jsp/Publication.jsp").forward(request, response);
+        }
+    }
+    
+    private void deletePublication(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr != null) {
+            Integer id = Integer.parseInt(idStr);
+            // Publication publication = publicationService.find(id);
+            
+            // Supprimer le fichier physique
+            // String uploadPath = getServletContext().getRealPath("") + File.separator + publication.getCheminFichier();
+            // File file = new File(uploadPath);
+            // if (file.exists()) {
+            //     file.delete();
+            // }
+            
+            // publicationService.delete(id);
+        }
+        response.sendRedirect(request.getContextPath() + "/publication?action=list");
+    }
+    
+    private String getFileName(Part part) {
+        String contentDisposition = part.getHeader("content-disposition");
+        String[] tokens = contentDisposition.split(";");
+        for (String token : tokens) {
+            if (token.trim().startsWith("filename")) {
+                return token.substring(token.indexOf('=') + 2, token.length() - 1);
             }
         }
-        
-        request.setAttribute("patients", patients);
-        request.setAttribute("action", "patients");
-        request.getRequestDispatcher("Publication.jsp").forward(request, response);
+        return "";
     }
 }

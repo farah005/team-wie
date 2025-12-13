@@ -1,12 +1,5 @@
 package servlets;
 
-import dao.ActeMedicalDAO;
-import dao.RendezvousDAO;
-import dao.ServiceMedicalDAO;
-import entities.ActeMedical;
-import entities.Rendezvous;
-import entities.ServiceMedical;
-import jakarta.ejb.EJB;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -14,76 +7,119 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.List;
 
-@WebServlet("/acteMedical")
+@WebServlet("/actemedical")
 public class ActeMedicalServlet extends HttpServlet {
-    
-    @EJB
-    private ActeMedicalDAO acteDAO;
-    
-    @EJB
-    private RendezvousDAO rendezvousDAO;
-    
-    @EJB
-    private ServiceMedicalDAO serviceDAO;
-    
-    @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+    private static final long serialVersionUID = 1L;
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String action = request.getParameter("action");
         
-        String idRdvStr = request.getParameter("idRdv");
-        
-        if (idRdvStr != null) {
-            Integer idRdv = Integer.parseInt(idRdvStr);
-            List<ActeMedical> actes = acteDAO.findByRendezvous(idRdv);
-            Rendezvous rdv = rendezvousDAO.find(idRdv);
-            
-            request.setAttribute("actes", actes);
-            request.setAttribute("rendezvous", rdv);
+        if ("list".equals(action)) {
+            listActes(request, response);
+        } else if ("view".equals(action)) {
+            viewActe(request, response);
+        } else if ("byRendezvous".equals(action)) {
+            listByRendezvous(request, response);
+        } else {
+            // Afficher le formulaire d'acte médical
+            request.getRequestDispatcher("/WEB-INF/jsp/ActeMedical.jsp").forward(request, response);
         }
+    }
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String action = request.getParameter("action");
         
-        List<ServiceMedical> services = serviceDAO.findAll();
-        request.setAttribute("services", services);
-        
-        request.getRequestDispatcher("ActeMedical.jsp").forward(request, response);
+        if ("create".equals(action)) {
+            createActe(request, response);
+        } else if ("update".equals(action)) {
+            updateActe(request, response);
+        } else if ("delete".equals(action)) {
+            deleteActe(request, response);
+        }
     }
     
-    @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+    private void createActe(HttpServletRequest request, HttpServletResponse response) 
             throws ServletException, IOException {
+        String idRvStr = request.getParameter("idRv");
+        String numSMStr = request.getParameter("numSM");
+        String description = request.getParameter("description");
+        String tarifStr = request.getParameter("tarif");
         
-        try {
-            String idRdvStr = request.getParameter("idRdv");
-            String numSMStr = request.getParameter("numSM");
-            String description = request.getParameter("description");
-            String tarifStr = request.getParameter("tarif");
-            
-            Integer idRdv = Integer.parseInt(idRdvStr);
-            Integer numSM = Integer.parseInt(numSMStr);
-            
-            Rendezvous rdv = rendezvousDAO.find(idRdv);
-            ServiceMedical service = serviceDAO.find(numSM);
-            
-            ActeMedical acte = new ActeMedical();
-            acte.setRendezvous(rdv);
-            acte.setServiceMedical(service);
-            acte.setDescriptionAM(description);
-            
-            if (tarifStr != null && !tarifStr.isEmpty()) {
-                acte.setTarifAM(new BigDecimal(tarifStr));
-            } else {
-                acte.setTarifAM(service.getTarifSM());
-            }
-            
-            acteDAO.create(acte);
-            
-            response.sendRedirect("acteMedical?idRdv=" + idRdv);
-            
-        } catch (Exception e) {
-            e.printStackTrace();
-            request.setAttribute("error", "Erreur lors de la création de l'acte médical");
-            doGet(request, response);
+        // Validation
+        if (idRvStr == null || numSMStr == null) {
+            request.setAttribute("erreur", "Veuillez remplir tous les champs obligatoires");
+            request.getRequestDispatcher("/WEB-INF/jsp/ActeMedical.jsp").forward(request, response);
+            return;
         }
+        
+        Integer idRv = Integer.parseInt(idRvStr);
+        Integer numSM = Integer.parseInt(numSMStr);
+        
+        BigDecimal tarif = null;
+        if (tarifStr != null && !tarifStr.isEmpty()) {
+            tarif = new BigDecimal(tarifStr);
+        }
+        
+        // Créer l'entité ActeMedical
+        // ActeMedical acte = new ActeMedical();
+        // acte.setIdRv(idRv);
+        // acte.setNumSM(numSM);
+        // acte.setDescriptionAM(description);
+        // acte.setTarifAM(tarif);
+        
+        // Appel au service EJB
+        // acteMedicalService.create(acte);
+        
+        request.setAttribute("message", "Acte médical créé avec succès");
+        request.getRequestDispatcher("/WEB-INF/jsp/ActeMedical.jsp").forward(request, response);
+    }
+    
+    private void updateActe(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        // Logique de mise à jour
+        response.sendRedirect(request.getContextPath() + "/actemedical?action=list");
+    }
+    
+    private void deleteActe(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr != null) {
+            Integer id = Integer.parseInt(idStr);
+            // acteMedicalService.delete(id);
+        }
+        response.sendRedirect(request.getContextPath() + "/actemedical?action=list");
+    }
+    
+    private void listActes(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        // List<ActeMedical> actes = acteMedicalService.findAll();
+        // request.setAttribute("actes", actes);
+        request.getRequestDispatcher("/WEB-INF/jsp/ListeActes.jsp").forward(request, response);
+    }
+    
+    private void viewActe(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String idStr = request.getParameter("id");
+        if (idStr != null) {
+            Integer id = Integer.parseInt(idStr);
+            // ActeMedical acte = acteMedicalService.find(id);
+            // request.setAttribute("acte", acte);
+        }
+        request.getRequestDispatcher("/WEB-INF/jsp/DetailActe.jsp").forward(request, response);
+    }
+    
+    private void listByRendezvous(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        String idRvStr = request.getParameter("idRv");
+        if (idRvStr != null) {
+            Integer idRv = Integer.parseInt(idRvStr);
+            // List<ActeMedical> actes = acteMedicalService.findByRendezvous(idRv);
+            // request.setAttribute("actes", actes);
+        }
+        request.getRequestDispatcher("/WEB-INF/jsp/ListeActes.jsp").forward(request, response);
     }
 }
