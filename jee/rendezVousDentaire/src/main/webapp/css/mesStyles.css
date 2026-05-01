@@ -1,0 +1,166 @@
+/* ===== 1. POLICES ET VARIABLES ===== */
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=Plus+Jakarta+Sans:wght@300;500;700&display=swap');
+
+:root {
+    --bg-nude: #F9F7F2;
+    --luxury-dark: #4A3F35;
+    --accent-rose: #D4A373;
+    --white-glass: rgba(255, 255, 255, 0.9);
+    --success: #2D8A5C;
+    --error: #C0392B;
+}
+
+/* ===== 2. RESET ET BASE ===== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background-color: var(--bg-nude);
+    color: var(--luxury-dark);
+    line-height: 1.6;
+}
+
+/* ===== 3. NAVIGATION (HEADER COMMUN) ===== */
+nav {
+    background: white !important; /* Force le fond blanc du header */
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+}
+
+nav a {
+    text-decoration: none;
+    color: var(--luxury-dark);
+    font-weight: 600;
+    font-size: 0.85rem;
+    transition: 0.3s;
+}
+
+nav a:hover { color: var(--accent-rose); }
+
+/* ===== 4. CONTENEURS DE FORMULAIRE (Inscription & Connexion) ===== */
+.form-container, .login-container {
+    background: white;
+    max-width: 650px;
+    margin: 40px auto;
+    padding: 40px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(74, 63, 53, 0.05);
+}
+
+.login-container { max-width: 450px; } /* Plus étroit pour le login */
+
+h2, h3 {
+    font-family: 'Playfair Display', serif;
+    color: var(--luxury-dark);
+    margin-bottom: 1.5rem;
+}
+
+/* ===== 5. ÉLÉMENTS DE FORMULAIRE ===== */
+.form-group { margin-bottom: 1.5rem; }
+
+label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 12px 15px;
+    border: 1px solid #E5E1DA;
+    border-radius: 10px;
+    background: #FDFBF9;
+    font-family: inherit;
+    transition: 0.3s;
+}
+
+input:focus, select:focus {
+    outline: none;
+    border-color: var(--accent-rose);
+    box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.1);
+}
+
+.btn-primary {
+    background: var(--luxury-dark);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    cursor: pointer;
+    width: 100%;
+    transition: 0.4s;
+}
+
+.btn-primary:hover {
+    background: var(--accent-rose);
+    transform: translateY(-2px);
+}
+
+/* ===== 6. TABLEAUX (AGENDA) ===== */
+.list-section {
+    margin-top: 40px;
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px; /* Espace entre les lignes */
+}
+
+th {
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 15px;
+    text-align: left;
+    color: #A39689;
+}
+
+td {
+    background: white;
+    padding: 20px 15px;
+}
+
+td:first-child { border-radius: 15px 0 0 15px; }
+td:last-child { border-radius: 0 15px 15px 0; }
+
+/* ===== 7. BADGES ET MESSAGES ===== */
+.status-badge {
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.en.attente { background: #FFF4E5; color: #B07D31; }
+.confirmé { background: #E5F9F0; color: var(--success); }
+.annulé { background: #FDECEC; color: var(--error); }
+
+.error-message {
+    background: #FDECEC;
+    color: var(--error);
+    padding: 15px;
+    border-radius: 10px;
+    border: 1px solid #FACCCC;
+    margin-bottom: 20px;
+    font-size: 0.85rem;
+}
+
+/* ===== 8. RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .form-row { flex-direction: column; gap: 0; }
+    .form-container { margin: 20px; padding: 20px; }
+}
