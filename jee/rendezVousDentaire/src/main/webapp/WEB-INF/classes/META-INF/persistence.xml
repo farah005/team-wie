@@ -1,0 +1,27 @@
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence" version="3.0">
+<persistence-unit name="RendezVousPU" transaction-type="JTA">
+<!--  JTA DataSource (for WildFly)  -->
+<jta-data-source>java:/jdbc/cabinetdentaireDS</jta-data-source>
+<properties>
+<!--  Database Dialect  -->
+<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+<!--  Schema Generation - CHOOSE ONE APPROACH:  -->
+<!--  For Development: Auto update schema  -->
+<property name="jakarta.persistence.schema-generation.database.action" value="update"/>
+<!--  For Production: Don't auto-update schema  -->
+<!--  <property name="jakarta.persistence.schema-generation.database.action" value="none"/>  -->
+<!--  SQL Logging  -->
+<property name="hibernate.show_sql" value="true"/>
+<property name="hibernate.format_sql" value="true"/>
+<!--  Connection Pool Settings  -->
+<property name="hibernate.c3p0.min_size" value="5"/>
+<property name="hibernate.c3p0.max_size" value="20"/>
+<property name="hibernate.c3p0.timeout" value="300"/>
+<!--  Character Encoding  -->
+<property name="hibernate.connection.charSet" value="UTF-8"/>
+<property name="hibernate.connection.characterEncoding" value="UTF-8"/>
+<!--  Transaction Settings  -->
+<property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.JBossAppServerJtaPlatform"/>
+</properties>
+</persistence-unit>
+</persistence>
