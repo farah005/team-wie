@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="https://jakarta.ee/xml/ns/jakartaee"
+       version="4.0"
+       bean-discovery-mode="annotated">
+    
+    <!-- CDI activé pour tous les beans -->
+    <!-- bean-discovery-mode="all" : tous les beans sont découverts automatiquement -->
+    
+</beans>

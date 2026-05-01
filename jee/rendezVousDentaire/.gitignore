@@ -1,0 +1,30 @@
+# Fichiers binaires et dossiers de build
+/bin/
+/build/
+/target/
+
+# Fichiers Eclipse
+/.classpath
+/.project
+/.settings/
+
+# Logs et fichiers temporaires
+*.log
+*.tmp
+
+# Déploiement temporaire sur serveur (Tomcat, WildFly, GlassFish, etc.)
+/work/
+/tmp/
+/out/
+
+# Bases de données locales (si utilisées)
+*.db
+*.h2.db
+
+# Configuration locale (si IntelliJ ou autre IDE sont utilisés)
+*.iml
+.idea/
+
+# Mac OS / Linux / Windows
+.DS_Store
+Thumbs.db
