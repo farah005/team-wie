@@ -1,0 +1,7 @@
+fastapi
+pydantic
+requests
+feedparser
+facebook-scraper
+uvicorn
+pytest
