@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from backend.services.pipeline import run_full_pipeline
+from persona_engine import get_dashboard
 
 app = FastAPI()
 
