@@ -14,7 +14,10 @@ Intégration :
 """
 
 import re
-import emoji as emoji_lib
+try:
+    import emoji as emoji_lib
+except ImportError:
+    emoji_lib = None
 
 from analysis.utils import (
     clean_text,
@@ -144,6 +147,9 @@ def extract_emojis(text: str) -> list[str]:
     """
     if not text:
         return []
+    if emoji_lib is None:
+        known = set(EMOJI_EMOTION_MAP)
+        return list(dict.fromkeys(char for char in text if char in known))
     # emoji_lib.emoji_list retourne [{"emoji": "🔥", "match_start": ..., "match_end": ...}]
     found = emoji_lib.emoji_list(text)
     return list(dict.fromkeys(e["emoji"] for e in found))  # dédupliqué, ordre préservé

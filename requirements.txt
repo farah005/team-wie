@@ -1,7 +1,12 @@
 fastapi
+uvicorn
+python-multipart
 pydantic
 requests
 feedparser
-facebook-scraper
-uvicorn
+emoji
+streamlit
+pandas
+anthropic
+pytrends
 pytest

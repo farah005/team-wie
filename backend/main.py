@@ -1,63 +1,36 @@
-from backend.interfaces import *
-from backend.schemas import EnrichedEvent, Dashboard
-from backend.mock_modules import *
+from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.middleware.cors import CORSMiddleware
+from .auth import authenticate_user, create_access_token, decode_token
+from .models import UserLogin, Token
+from .services.aggregator import get_news_by_interest
+from .services.summarizer import summarize_text
 
+app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+security = HTTPBearer()
 
-# -------------------------
-# PIPELINE PRINCIPAL
-# -------------------------
-def run_pipeline(persona: str = "journaliste"):
-    """
-    Exécute tout le pipeline :
-    collect → detect → compute → analyze → check → generate
-    """
+@app.post("/api/login", response_model=Token)
+def login(login_data: UserLogin):
+    user = authenticate_user(login_data.username, login_data.password)
+    if not user:
+        raise HTTPException(status_code=401, detail="Identifiants invalides")
+    token = create_access_token({"sub": login_data.username, "interest": user["interest"]})
+    return {"access_token": token, "token_type": "bearer", "interest": user["interest"]}
 
-    # 1. COLLECTE
-    posts = collect()
-
-    # 2. DETECTION EVENTS
-    events = detect(posts)
-
-    # 3. VIRAL SCORE
-    events = compute(events)
-
-    # 4. ANALYSE EMOTIONNELLE
-    emotions = analyze(events)
-
-    # 5. FAKE NEWS DETECTION
-    fake_scores = check(events)
-
-    # 6. FUSION (enrichissement)
-    enriched_events = []
-
-    for event in events:
-        enriched_events.append(
-            EnrichedEvent(
-                event_id=event.event_id,
-                keywords=event.keywords,
-                category=event.category,
-                region=event.region,
-                volume=event.volume,
-                growth=event.growth,
-                engagement=event.engagement,
-                viral_score=event.viral_score,
-                emotion=emotions.get(event.event_id),
-                fake_score=fake_scores.get(event.event_id, 0)
-            )
-        )
-
-    # 7. PERSONA ENGINE
-    dashboard = generate(enriched_events, persona)
-
-    return dashboard
-
-
-# -------------------------
-# TEST LOCAL
-# -------------------------
-if __name__ == "__main__":
-    result = run_pipeline(persona="journaliste")
-
-    print("\n===== DASHBOARD =====\n")
-    print(result)
-    
+@app.get("/api/news")
+def get_news(domain: str = None, credentials: HTTPAuthorizationCredentials = Depends(security)):
+    payload = decode_token(credentials.credentials)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Token invalide")
+    interest = domain or payload.get("interest", "general")
+    articles = get_news_by_interest(interest)
+    for a in articles:
+        if len(a["summary"]) > 150:
+            a["summary"] = summarize_text(a["summary"])
+    return articles

@@ -109,6 +109,8 @@ def standardize_output(post: dict) -> dict:
         # ── Scores détaillés ──────────────────────────────────
         "sensationalism_score": post.get("sensationalism_score", 0),
         "credibility_score": post.get("credibility_score", 50),
+        "backup": post.get("backup", False),
+        "backup_reason": post.get("backup_reason", ""),
     }
 
 

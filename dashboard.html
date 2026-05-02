@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TNessnisa — لوحة التحكم الإعلامية</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #000000;
+    --surface: #0d0d0d;
+    --surface2: #151515;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.16);
+    --text: #ffffff;
+    --muted: #888888;
+    --subtle: #444444;
+    --radius: 12px;
+    --red: #e60e0f;
+    --red-dark: #b00b0c;
+    --red-glow: rgba(230,14,15,0.15);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  .arabic { font-family: 'Noto Sans Arabic', sans-serif; }
+
+  /* ─── NOISE TEXTURE ─── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.4;
+  }
+
+  /* ─── LOGIN ─── */
+  #login-screen {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    padding: 2rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Big red glow behind logo */
+  #login-screen::before {
+    content: '';
+    position: fixed;
+    top: -20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 700px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(230,14,15,0.12) 0%, transparent 65%);
+    pointer-events: none;
+  }
+
+  .login-logo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2.5rem;
+  }
+
+  /* SVG Tunisia map inline */
+  .logo-mark {
+    width: 64px;
+    height: 80px;
+    margin-bottom: 0.8rem;
+    position: relative;
+  }
+
+  .logo-tn {
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+    margin-bottom: 0.3rem;
+  }
+
+  .logo-tn .tn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.2rem;
+    color: var(--red);
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+
+  .logo-tn .essnisa {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 3.2rem;
+    color: var(--text);
+    line-height: 1;
+    letter-spacing: 2px;
+  }
+
+  /* Wifi signal on the i */
+  .wifi-dot {
+    display: inline-block;
+    position: relative;
+  }
+
+  .wifi-dot::after {
+    content: '';
+    position: absolute;
+    top: -6px;
+    right: -14px;
+    width: 10px;
+    height: 10px;
+    border: 2px solid var(--red);
+    border-bottom: none;
+    border-left: none;
+    border-radius: 0 50% 0 0;
+    transform: rotate(45deg);
+  }
+
+  .login-tagline {
+    font-family: 'Noto Sans Arabic', sans-serif;
+    font-size: 0.9rem;
+    color: var(--muted);
+    text-align: center;
+    direction: rtl;
+    margin-bottom: 0.4rem;
+  }
+
+  .login-sub-en {
+    font-size: 0.78rem;
+    color: var(--subtle);
+    text-align: center;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .login-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 16px;
+    padding: 2rem 2.5rem;
+    width: 100%;
+    max-width: 500px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Red top bar */
+  .login-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--red);
+  }
+
+  .login-step { display: none; }
+  .login-step.active { display: block; }
+
+  .step-label {
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--red);
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+  }
+
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+
+  .form-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .form-field label {
+    font-size: 0.75rem;
+    color: var(--muted);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .form-field input, .form-field select {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .form-field input:focus, .form-field select:focus {
+    border-color: var(--red);
+    box-shadow: 0 0 0 3px rgba(230,14,15,0.1);
+  }
+
+  .form-field select option { background: #151515; }
+
+  .industry-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 1.5rem;
+  }
+
+  .industry-tile {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 0.6rem;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .industry-tile:hover {
+    border-color: rgba(230,14,15,0.4);
+    background: rgba(230,14,15,0.05);
+  }
+
+  .industry-tile.selected {
+    border-color: var(--red);
+    background: rgba(230,14,15,0.1);
+    box-shadow: 0 0 12px rgba(230,14,15,0.15);
+  }
+
+  .industry-icon { font-size: 1.5rem; }
+  .industry-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+  .industry-desc { font-size: 0.65rem; color: var(--muted); line-height: 1.3; }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--red);
+    color: #ffffff;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    font-size: 0.9rem;
+    border: none;
+    border-radius: 8px;
+    padding: 0.9rem 1.5rem;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-top: 0.5rem;
+  }
+
+  .btn-primary:hover { background: var(--red-dark); }
+  .btn-primary:active { transform: scale(0.99); }
+  .btn-primary:disabled { opacity: 0.35; cursor: not-allowed; }
+
+  .btn-back {
+    background: none;
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    padding: 0.45rem 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-bottom: 1.5rem;
+    transition: color 0.2s, border-color 0.2s;
+  }
+  .btn-back:hover { color: var(--text); border-color: var(--border2); }
+
+  /* ─── DASHBOARD ─── */
+  #dashboard { display: none; min-height: 100vh; position: relative; z-index: 1; }
+
+  .topbar {
+    height: 54px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem;
+    gap: 1rem;
+    position: sticky;
+    top: 0;
+    background: rgba(0,0,0,0.95);
+    backdrop-filter: blur(16px);
+    z-index: 100;
+  }
+
+  /* Red left accent */
+  .topbar::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--red);
+  }
+
+  .topbar-logo {
+    display: flex;
+    align-items: baseline;
+    gap: 0;
+  }
+
+  .topbar-tn {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--red);
+    letter-spacing: 1px;
+  }
+
+  .topbar-essnisa {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    color: var(--text);
+    letter-spacing: 2px;
+  }
+
+  .topbar-tag {
+    font-size: 0.68rem;
+    background: rgba(230,14,15,0.15);
+    color: var(--red);
+    padding: 3px 10px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border: 1px solid rgba(230,14,15,0.3);
+  }
+
+  .topbar-right {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  .user-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.82rem;
+    color: var(--muted);
+  }
+
+  .user-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    background: var(--red);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    font-family: 'Bebas Neue', sans-serif;
+    letter-spacing: 1px;
+  }
+
+  .refresh-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.78rem;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .refresh-btn:hover { color: var(--red); border-color: rgba(230,14,15,0.4); }
+
+  .dashboard-body {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: calc(100vh - 54px);
+  }
+
+  /* Sidebar */
+  .sidebar {
+    border-right: 1px solid var(--border);
+    padding: 1.5rem;
+    position: sticky;
+    top: 54px;
+    height: calc(100vh - 54px);
+    overflow-y: auto;
+  }
+
+  .sidebar-section { margin-bottom: 2rem; }
+
+  .sidebar-heading {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--subtle);
+    margin-bottom: 0.8rem;
+    font-weight: 700;
+  }
+
+  .sidebar-stat {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--red);
+    border-radius: 8px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 8px;
+  }
+
+  .stat-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+  .stat-value { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; color: var(--text); letter-spacing: 1px; }
+  .stat-delta { font-size: 0.72rem; color: #5fb97e; margin-top: 2px; }
+  .stat-delta.down { color: #e06060; }
+
+  .trend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0.55rem 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 0.83rem;
+  }
+  .trend-item:last-child { border-bottom: none; }
+
+  .trend-rank {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    color: var(--red);
+    width: 18px;
+    flex-shrink: 0;
+  }
+
+  .trend-text { color: var(--muted); flex: 1; }
+  .trend-fire { font-size: 0.8rem; }
+
+  /* Main content */
+  .main-content { padding: 1.5rem 2rem; }
+
+  .section-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 1.2rem;
+  }
+
+  .section-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.6rem;
+    letter-spacing: 2px;
+    color: var(--text);
+  }
+
+  .section-meta { font-size: 0.76rem; color: var(--muted); }
+
+  /* Red divider under section title */
+  .section-divider {
+    height: 2px;
+    background: var(--red);
+    width: 40px;
+    margin-bottom: 1.2rem;
+    margin-top: -0.8rem;
+  }
+
+  .articles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 12px;
+    margin-bottom: 2.5rem;
+  }
+
+  .article-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.2rem;
+    cursor: pointer;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .article-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 0;
+    background: var(--red);
+    transition: height 0.25s ease;
+  }
+
+  .article-card:hover {
+    border-color: rgba(230,14,15,0.3);
+    box-shadow: 0 0 20px rgba(230,14,15,0.06);
+  }
+  .article-card:hover::before { height: 100%; }
+
+  .article-card.loading {
+    min-height: 180px;
+    gap: 10px;
+  }
+
+  .skeleton {
+    background: linear-gradient(90deg, var(--surface2) 25%, #1d1d1d 50%, var(--surface2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 4px;
+  }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  .article-source {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--red);
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+  }
+
+  .article-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    margin-bottom: 0.6rem;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .article-summary {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+    margin-bottom: 0.8rem;
+  }
+
+  .article-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+  }
+
+  .article-time { font-size: 0.7rem; color: var(--subtle); }
+
+  .tag {
+    font-size: 0.65rem;
+    padding: 3px 8px;
+    border-radius: 3px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .tag-hot { background: rgba(230,14,15,0.15); color: var(--red); border: 1px solid rgba(230,14,15,0.3); }
+  .tag-rising { background: rgba(95,185,126,0.12); color: #5fb97e; border: 1px solid rgba(95,185,126,0.25); }
+  .tag-new { background: rgba(255,255,255,0.06); color: var(--text); border: 1px solid var(--border2); }
+
+  /* Highlighted card */
+  .highlighted-card {
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    border-radius: 14px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 2rem;
+    align-items: start;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .highlighted-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    background: var(--red);
+  }
+
+  /* Faint map watermark */
+  .highlighted-card::after {
+    content: 'tn';
+    position: absolute;
+    bottom: -20px;
+    right: 20px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 8rem;
+    color: rgba(230,14,15,0.03);
+    pointer-events: none;
+    letter-spacing: 4px;
+  }
+
+  .highlight-eyebrow {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 2.5px;
+    color: var(--red);
+    margin-bottom: 0.7rem;
+    font-weight: 700;
+  }
+
+  .highlight-title {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 1.5rem;
+    line-height: 1.3;
+    font-weight: 700;
+    margin-bottom: 0.8rem;
+    max-width: 600px;
+  }
+
+  .highlight-summary {
+    font-size: 0.88rem;
+    color: var(--muted);
+    line-height: 1.75;
+    margin-bottom: 1rem;
+    max-width: 580px;
+  }
+
+  .highlight-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.76rem;
+    color: var(--subtle);
+    align-items: center;
+  }
+
+  .source-pill {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+    border-radius: 3px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .sources-row { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 0.7rem; }
+
+  .signal-box {
+    background: var(--surface2);
+    border-radius: 10px;
+    padding: 1.2rem;
+    min-width: 180px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .signal-title {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--subtle);
+    margin-bottom: 0.8rem;
+    font-weight: 700;
+  }
+
+  .signal-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.4rem 0;
+    font-size: 0.8rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .signal-item:last-child { border-bottom: none; }
+
+  .signal-val { font-weight: 700; color: #5fb97e; font-size: 0.78rem; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; }
+  .signal-val.red { color: var(--red); }
+
+  /* Loading overlay */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.9);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  .loading-overlay.active { display: flex; }
+
+  .loader-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 3px;
+  }
+  .loader-logo .tn { color: var(--red); }
+  .loader-logo .es { color: white; }
+
+  .loader-bar {
+    width: 200px;
+    height: 2px;
+    background: var(--surface2);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .loader-bar-inner {
+    height: 100%;
+    width: 0;
+    background: var(--red);
+    animation: loadbar 1.2s ease forwards;
+  }
+
+  @keyframes loadbar {
+    to { width: 100%; }
+  }
+
+  .loader-text {
+    font-size: 0.78rem;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .dashboard-body { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .industry-grid { grid-template-columns: repeat(2, 1fr); }
+    .form-row { grid-template-columns: 1fr; }
+    .highlighted-card { grid-template-columns: 1fr; }
+    .signal-box { display: none; }
+    .login-card { padding: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Loading overlay -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loader-logo"><span class="tn">TN</span><span class="es">essnisa</span></div>
+  <div class="loader-bar"><div class="loader-bar-inner" id="loader-bar-inner"></div></div>
+  <p class="loader-text" id="loader-text">Analyse en cours...</p>
+</div>
+
+<!-- ─── LOGIN ─── -->
+<div id="login-screen">
+
+<div class="login-logo-wrap">
+  <img src="logoh.png" style="width:340px; margin-bottom:2rem;" />
+</div>
+
+  <div class="login-card">
+    <!-- Step 1 -->
+    <div class="login-step active" id="step-1">
+      <div class="step-label">Étape 1 / 2 · Votre identité</div>
+      <div class="form-row">
+        <div class="form-field">
+          <label>Prénom</label>
+          <input type="text" id="firstname" placeholder="Mohamed" />
+        </div>
+        <div class="form-field">
+          <label>Nom</label>
+          <input type="text" id="lastname" placeholder="Trabelsi" />
+        </div>
+      </div>
+      <div class="form-field">
+        <label>Email professionnel</label>
+        <input type="email" id="email" placeholder="m.trabelsi@media.tn" />
+      </div>
+      <div class="form-field">
+        <label>Rôle</label>
+        <select id="role">
+          <option value="">Sélectionnez votre rôle...</option>
+          <option>Journaliste</option>
+          <option>Directeur marketing</option>
+          <option>Analyste media</option>
+          <option>Community manager</option>
+          <option>Brand manager</option>
+          <option>Responsable communication</option>
+          <option>Autre</option>
+        </select>
+      </div>
+      <button class="btn-primary" onclick="goStep2()">Continuer →</button>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="login-step" id="step-2">
+      <button class="btn-back" onclick="goStep1()">← Retour</button>
+      <div class="step-label">Étape 2 / 2 · Votre secteur</div>
+
+      <div class="industry-grid" id="industry-grid">
+        <div class="industry-tile" data-id="sports" onclick="selectIndustry(this)">
+          <div class="industry-icon">⚽</div>
+          <div class="industry-name">Sports</div>
+          <div class="industry-desc">Football, transferts, NBA</div>
+        </div>
+        <div class="industry-tile" data-id="politics" onclick="selectIndustry(this)">
+          <div class="industry-icon">🏛️</div>
+          <div class="industry-name">Politique</div>
+          <div class="industry-desc">Tunisie, région, monde</div>
+        </div>
+        <div class="industry-tile" data-id="tech" onclick="selectIndustry(this)">
+          <div class="industry-icon">💻</div>
+          <div class="industry-name">Tech & IA</div>
+          <div class="industry-desc">Startups, digital, IA</div>
+        </div>
+        <div class="industry-tile" data-id="finance" onclick="selectIndustry(this)">
+          <div class="industry-icon">📈</div>
+          <div class="industry-name">Finance</div>
+          <div class="industry-desc">Marchés, économie, dinar</div>
+        </div>
+        <div class="industry-tile" data-id="entertainment" onclick="selectIndustry(this)">
+          <div class="industry-icon">🎬</div>
+          <div class="industry-name">Culture</div>
+          <div class="industry-desc">Cinéma, musique, art</div>
+        </div>
+        <div class="industry-tile" data-id="health" onclick="selectIndustry(this)">
+          <div class="industry-icon">🏥</div>
+          <div class="industry-name">Santé</div>
+          <div class="industry-desc">Médecine, bien-être</div>
+        </div>
+        <div class="industry-tile" data-id="fashion" onclick="selectIndustry(this)">
+          <div class="industry-icon">👗</div>
+          <div class="industry-name">Mode</div>
+          <div class="industry-desc">Luxe, tendances</div>
+        </div>
+        <div class="industry-tile" data-id="food" onclick="selectIndustry(this)">
+          <div class="industry-icon">🍽️</div>
+          <div class="industry-name">Food</div>
+          <div class="industry-desc">Gastronomie, lifestyle</div>
+        </div>
+        <div class="industry-tile" data-id="environment" onclick="selectIndustry(this)">
+          <div class="industry-icon">🌿</div>
+          <div class="industry-name">Environnement</div>
+          <div class="industry-desc">Climat, énergie</div>
+        </div>
+      </div>
+
+      <button class="btn-primary" id="launch-btn" disabled onclick="launchDashboard()">
+        Accéder au tableau de bord →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DASHBOARD ─── -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-logo">
+      <span class="topbar-tn">TN</span><span class="topbar-essnisa">essnisa</span>
+    </div>
+    <div class="topbar-tag" id="topbar-sector">Sports</div>
+    <div class="topbar-right">
+      <button class="refresh-btn" onclick="refreshContent()">
+        <span>↻</span> Actualiser
+      </button>
+      <div class="user-badge">
+        <div class="user-avatar" id="user-avatar">MT</div>
+        <span id="user-name">Mohamed T.</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="dashboard-body">
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Statistiques du jour</div>
+        <div class="sidebar-stat">
+          <div class="stat-label">Articles analysés</div>
+          <div class="stat-value" id="stat-articles">—</div>
+          <div class="stat-delta" id="stat-articles-delta"></div>
+        </div>
+        <div class="sidebar-stat">
+          <div class="stat-label">Sources actives</div>
+          <div class="stat-value" id="stat-sources">—</div>
+        </div>
+        <div class="sidebar-stat">
+          <div class="stat-label">Sujets tendance</div>
+          <div class="stat-value" id="stat-trends">—</div>
+          <div class="stat-delta" id="stat-trends-delta"></div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Trending Topics</div>
+        <div id="trending-list">
+          <div class="trend-item"><span class="skeleton" style="width:100%;height:13px"></span></div>
+          <div class="trend-item"><span class="skeleton" style="width:80%;height:13px"></span></div>
+          <div class="trend-item"><span class="skeleton" style="width:90%;height:13px"></span></div>
+          <div class="trend-item"><span class="skeleton" style="width:70%;height:13px"></span></div>
+          <div class="trend-item"><span class="skeleton" style="width:85%;height:13px"></span></div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-heading">Sources surveillées</div>
+        <div id="sources-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+      </div>
+    </div>
+
+    <div class="main-content">
+      <!-- Featured -->
+      <div id="highlight-section">
+        <div class="section-header">
+          <div>
+            <div class="section-title">À la une</div>
+            <div class="section-divider"></div>
+          </div>
+          <div class="section-meta" id="last-updated">Chargement...</div>
+        </div>
+        <div class="highlighted-card" id="highlight-card">
+          <div>
+            <div class="skeleton" style="width:130px;height:11px;margin-bottom:0.9rem"></div>
+            <div class="skeleton" style="width:88%;height:26px;margin-bottom:0.6rem"></div>
+            <div class="skeleton" style="width:65%;height:26px;margin-bottom:1rem"></div>
+            <div class="skeleton" style="width:100%;height:11px;margin-bottom:0.5rem"></div>
+            <div class="skeleton" style="width:100%;height:11px;margin-bottom:0.5rem"></div>
+            <div class="skeleton" style="width:78%;height:11px"></div>
+          </div>
+          <div class="signal-box">
+            <div class="signal-title">Signaux digitaux</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Articles -->
+      <div class="section-header">
+        <div>
+          <div class="section-title">Actualités du moment</div>
+          <div class="section-divider"></div>
+        </div>
+        <div class="section-meta" id="articles-count"></div>
+      </div>
+      <div class="articles-grid" id="articles-grid">
+        <div class="article-card loading">
+          <div class="skeleton" style="width:80px;height:9px;margin-bottom:0.5rem"></div>
+          <div class="skeleton" style="width:90%;height:16px;margin-bottom:0.4rem"></div>
+          <div class="skeleton" style="width:70%;height:16px;margin-bottom:1rem"></div>
+          <div class="skeleton" style="width:100%;height:9px;margin-top:auto"></div>
+        </div>
+        <div class="article-card loading">
+          <div class="skeleton" style="width:70px;height:9px;margin-bottom:0.5rem"></div>
+          <div class="skeleton" style="width:85%;height:16px;margin-bottom:0.4rem"></div>
+          <div class="skeleton" style="width:95%;height:16px;margin-bottom:1rem"></div>
+          <div class="skeleton" style="width:100%;height:9px;margin-top:auto"></div>
+        </div>
+        <div class="article-card loading">
+          <div class="skeleton" style="width:90px;height:9px;margin-bottom:0.5rem"></div>
+          <div class="skeleton" style="width:80%;height:16px;margin-bottom:0.4rem"></div>
+          <div class="skeleton" style="width:75%;height:16px;margin-bottom:1rem"></div>
+          <div class="skeleton" style="width:100%;height:9px;margin-top:auto"></div>
+        </div>
+        <div class="article-card loading">
+          <div class="skeleton" style="width:60px;height:9px;margin-bottom:0.5rem"></div>
+          <div class="skeleton" style="width:95%;height:16px;margin-bottom:0.4rem"></div>
+          <div class="skeleton" style="width:88%;height:16px;margin-bottom:1rem"></div>
+          <div class="skeleton" style="width:100%;height:9px;margin-top:auto"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedIndustry = null;
+let userData = {};
+
+const INDUSTRY_CONFIG = {
+  sports: {
+    label: 'Sports', icon: '⚽',
+    sources: ["L'Équipe", 'RFI Sport', 'BBC Sport', 'Sky Sports', 'ESPN', 'Foot Mercato'],
+    statArticles: '1 247', statDelta: '+18% vs hier',
+    statSources: '14', statTrends: '23', trendsDelta: '↑ 5 nouveaux',
+    trends: [
+      { text: 'Ligue des Champions', fire: '🔥' }, { text: 'Mercato estival', fire: '📈' },
+      { text: 'Roland Garros 2026', fire: '🔥' }, { text: 'NBA Playoffs', fire: '🔥' },
+      { text: "Espérance de Tunis", fire: '📈' },
+    ]
+  },
+  politics: {
+    label: 'Politique', icon: '🏛️',
+    sources: ['Le Monde', 'Politico', 'Medapart', 'Al Jazeera', 'Reuters', 'TAP'],
+    statArticles: '1 932', statDelta: '+14% vs hier',
+    statSources: '18', statTrends: '29', trendsDelta: '↑ 6 nouveaux',
+    trends: [
+      { text: 'Élections municipales Tunisie', fire: '🔥' }, { text: 'Sommet UA', fire: '📈' },
+      { text: 'Relations Maghreb-UE', fire: '⚠️' }, { text: 'Réformes constitutionnelles', fire: '📈' },
+      { text: 'Conflit Moyen-Orient', fire: '⚠️' },
+    ]
+  },
+  tech: {
+    label: 'Tech & IA', icon: '💻',
+    sources: ['TechCrunch', 'Wired', 'The Verge', 'MIT Tech Review', 'ProductHunt', 'Startups.tn'],
+    statArticles: '2 104', statDelta: '+31% vs hier',
+    statSources: '19', statTrends: '41', trendsDelta: '↑ 12 nouveaux',
+    trends: [
+      { text: 'Claude 4 & GPT-5', fire: '🔥' }, { text: 'Apple WWDC 2026', fire: '🔥' },
+      { text: 'Startups tunisiennes', fire: '📈' }, { text: 'Cybersécurité', fire: '⚠️' },
+      { text: 'Robotique humanoides', fire: '📈' },
+    ]
+  },
+  finance: {
+    label: 'Finance', icon: '📈',
+    sources: ['Bloomberg', 'Financial Times', 'Les Échos', 'Reuters', 'CoinDesk', 'L\'Économiste Maghrébin'],
+    statArticles: '1 580', statDelta: '+7% vs hier',
+    statSources: '16', statTrends: '28', trendsDelta: '↑ 4 nouveaux',
+    trends: [
+      { text: 'Dinar tunisien', fire: '⚠️' }, { text: 'CAC 40', fire: '📈' },
+      { text: 'Bitcoin ATH', fire: '🔥' }, { text: 'Investissements Tunisie', fire: '📈' },
+      { text: 'Inflation zone euro', fire: '⚠️' },
+    ]
+  },
+  entertainment: {
+    label: 'Culture', icon: '🎬',
+    sources: ['Deadline', 'Variety', 'Rolling Stone', 'Billboard', 'Tunisie Culture', 'Kapitalis'],
+    statArticles: '1 095', statDelta: '+22% vs hier',
+    statSources: '12', statTrends: '35', trendsDelta: '↑ 8 nouveaux',
+    trends: [
+      { text: 'Carthage Film Festival', fire: '🔥' }, { text: 'Rap tunisien', fire: '📈' },
+      { text: 'JCC 2026', fire: '🔥' }, { text: 'Netflix Maghreb', fire: '📈' },
+      { text: 'Streaming wars', fire: '📈' },
+    ]
+  },
+  health: {
+    label: 'Santé', icon: '🏥',
+    sources: ['WHO', 'Nature', 'Lancet', 'Stat News', 'Ministère Santé TN', 'PubMed'],
+    statArticles: '742', statDelta: '+5% vs hier',
+    statSources: '10', statTrends: '14', trendsDelta: '↑ 2 nouveaux',
+    trends: [
+      { text: 'Santé publique Tunisie', fire: '📈' }, { text: 'IA diagnostic médical', fire: '🔥' },
+      { text: 'Santé mentale', fire: '📈' }, { text: 'Nouveaux traitements obésité', fire: '🔥' },
+      { text: 'Pandémie surveillance OMS', fire: '⚠️' },
+    ]
+  },
+  fashion: {
+    label: 'Mode', icon: '👗',
+    sources: ['Vogue', 'WWD', 'Business of Fashion', 'Elle', "Harper's Bazaar", 'TikTok Mode'],
+    statArticles: '863', statDelta: '+12% vs hier',
+    statSources: '11', statTrends: '17', trendsDelta: '↑ 3 nouveaux',
+    trends: [
+      { text: 'Défilés Paris FW', fire: '🔥' }, { text: 'Créateurs tunisiens', fire: '📈' },
+      { text: 'Tendances été 2026', fire: '🔥' }, { text: 'Mode durable', fire: '🌿' },
+      { text: 'Collaborations sneakers', fire: '📈' },
+    ]
+  },
+  food: {
+    label: 'Food & Lifestyle', icon: '🍽️',
+    sources: ["Bon Appétit", 'Le Fooding', 'Food52', 'Eater', 'Cuisine Tunisienne', 'TikTok Food'],
+    statArticles: '578', statDelta: '+9% vs hier',
+    statSources: '9', statTrends: '12', trendsDelta: '↑ 3 nouveaux',
+    trends: [
+      { text: 'Gastronomie tunisienne', fire: '🔥' }, { text: 'Guide Michelin 2026', fire: '📈' },
+      { text: 'Street food Tunis', fire: '🔥' }, { text: 'Fermentation tendance', fire: '📈' },
+      { text: 'Alimentation anti-âge', fire: '📈' },
+    ]
+  },
+  environment: {
+    label: 'Environnement', icon: '🌿',
+    sources: ['The Guardian Env', 'Carbon Brief', 'Le Monde Planète', 'Nature Climate', 'IPCC'],
+    statArticles: '634', statDelta: '+11% vs hier',
+    statSources: '9', statTrends: '16', trendsDelta: '↑ 4 nouveaux',
+    trends: [
+      { text: 'Sécheresse Tunisie', fire: '⚠️' }, { text: 'COP32 résultats', fire: '🔥' },
+      { text: 'Énergies renouvelables', fire: '📈' }, { text: 'Désertification Sahel', fire: '⚠️' },
+      { text: 'Plastique législation UE', fire: '📈' },
+    ]
+  }
+};
+
+function handleLogoUpload(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const preview = document.getElementById('logo-preview');
+    const placeholder = document.getElementById('logo-placeholder');
+    preview.src = e.target.result;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+  };
+  reader.readAsDataURL(file);
+}
+
+function goStep2() {
+  const fn = document.getElementById('firstname').value.trim();
+  const ln = document.getElementById('lastname').value.trim();
+  const em = document.getElementById('email').value.trim();
+  if (!fn || !ln || !em) { alert('Veuillez remplir tous les champs obligatoires.'); return; }
+  userData = { firstname: fn, lastname: ln, email: em, role: document.getElementById('role').value };
+  document.getElementById('step-1').classList.remove('active');
+  document.getElementById('step-2').classList.add('active');
+}
+
+function goStep1() {
+  document.getElementById('step-2').classList.remove('active');
+  document.getElementById('step-1').classList.add('active');
+}
+
+function selectIndustry(el) {
+  document.querySelectorAll('.industry-tile').forEach(t => t.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedIndustry = el.dataset.id;
+  document.getElementById('launch-btn').disabled = false;
+}
+
+function launchDashboard() {
+  if (!selectedIndustry) return;
+  showLoading('Personnalisation en cours...');
+  setTimeout(() => {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    initDashboard();
+    hideLoading();
+  }, 1300);
+}
+
+function initDashboard() {
+  const cfg = INDUSTRY_CONFIG[selectedIndustry];
+  const fn = userData.firstname;
+  const ln = userData.lastname;
+
+  document.getElementById('topbar-sector').textContent = cfg.label;
+  document.getElementById('user-name').textContent = fn + ' ' + ln[0] + '.';
+  document.getElementById('user-avatar').textContent = (fn[0] + ln[0]).toUpperCase();
+
+  document.getElementById('stat-articles').textContent = cfg.statArticles;
+  document.getElementById('stat-articles-delta').textContent = cfg.statDelta;
+  document.getElementById('stat-sources').textContent = cfg.statSources;
+  document.getElementById('stat-trends').textContent = cfg.statTrends;
+  document.getElementById('stat-trends-delta').textContent = cfg.trendsDelta;
+
+  document.getElementById('trending-list').innerHTML = cfg.trends.map((t, i) => `
+    <div class="trend-item">
+      <span class="trend-rank">${i + 1}</span>
+      <span class="trend-text">${t.text}</span>
+      <span class="trend-fire">${t.fire}</span>
+    </div>
+  `).join('');
+
+  document.getElementById('sources-list').innerHTML = cfg.sources.map(s =>
+    `<span class="source-pill">${s}</span>`).join('');
+
+  document.getElementById('last-updated').textContent = 'Mis à jour à ' +
+    new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+  document.getElementById('articles-count').textContent = cfg.statArticles + ' sources analysées';
+
+  loadAIContent();
+}
+
+async function loadAIContent() {
+  const cfg = INDUSTRY_CONFIG[selectedIndustry];
+  const today = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+
+  const prompt = `Tu es un assistant d'analyse media pour TNessnisa, un media tunisien. Nous sommes le ${today}.
+
+Secteur : **${cfg.label}**.
+Sources : ${cfg.sources.join(', ')}.
+Trending : ${cfg.trends.map(t => t.text).join(', ')}.
+
+Génère un briefing JSON (UNIQUEMENT JSON, sans backticks ni markdown) :
+{
+  "headline": {
+    "title": "titre accrocheur max 12 mots",
+    "summary": "résumé intelligent 2-3 phrases ~60 mots",
+    "source": "Source principale",
+    "category": "Breaking|Analyse|Tendance",
+    "signals": [
+      {"label": "Google Trends", "value": "+245%"},
+      {"label": "Mentions RS", "value": "12.4k"},
+      {"label": "Sentiment", "value": "Positif"},
+      {"label": "Viralité", "value": "Élevée"}
+    ]
+  },
+  "articles": [
+    {"title": "titre max 10 mots", "summary": "résumé 40 mots", "source": "media", "tag": "hot", "time": "il y a 2h"},
+    {"title": "titre", "summary": "résumé", "source": "media", "tag": "rising", "time": "il y a 4h"},
+    {"title": "titre", "summary": "résumé", "source": "media", "tag": "new", "time": "il y a 1h"},
+    {"title": "titre", "summary": "résumé", "source": "media", "tag": "hot", "time": "il y a 6h"}
+  ]
+}`;
+
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const data = await res.json();
+    const raw = data.content.map(b => b.text || '').join('');
+    const clean = raw.replace(/```json|```/g, '').trim();
+    renderContent(JSON.parse(clean));
+  } catch (e) {
+    renderFallback();
+  }
+}
+
+function renderContent(data) {
+  const cfg = INDUSTRY_CONFIG[selectedIndustry];
+  const hl = data.headline;
+
+  document.getElementById('highlight-card').innerHTML = `
+    <div>
+      <div class="highlight-eyebrow">${hl.source} · ${hl.category}</div>
+      <div class="highlight-title">${hl.title}</div>
+      <div class="highlight-summary">${hl.summary}</div>
+      <div class="highlight-meta">
+        <span>Agrégé depuis ${cfg.sources.length} sources</span>
+        <span>·</span>
+        <span style="color:var(--red)">⬆ Trending</span>
+      </div>
+      <div class="sources-row">
+        ${cfg.sources.slice(0, 4).map(s => `<span class="source-pill">${s}</span>`).join('')}
+      </div>
+    </div>
+    <div class="signal-box">
+      <div class="signal-title">Signaux digitaux</div>
+      ${hl.signals.map(s => `
+        <div class="signal-item">
+          <span style="color:var(--muted);font-size:0.76rem">${s.label}</span>
+          <span class="signal-val">${s.value}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
+
+  document.getElementById('articles-grid').innerHTML = data.articles.map(a => `
+    <div class="article-card">
+      <div class="article-source">${a.source}</div>
+      <div class="article-title">${a.title}</div>
+      <div class="article-summary">${a.summary}</div>
+      <div class="article-footer">
+        <span class="article-time">${a.time}</span>
+        <span class="tag tag-${a.tag}">${a.tag === 'hot' ? '🔥 Hot' : a.tag === 'rising' ? '↑ Rising' : '✦ New'}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+function renderFallback() {
+  document.getElementById('highlight-card').innerHTML = `
+    <div>
+      <div class="highlight-eyebrow">Service temporairement indisponible</div>
+      <div class="highlight-title">Les résumés IA seront disponibles dans un instant</div>
+      <div class="highlight-summary">Vérifiez votre connexion ou cliquez sur Actualiser. Les tendances et statistiques restent accessibles dans la barre latérale.</div>
+    </div>
+    <div class="signal-box">
+      <div class="signal-title">Statut</div>
+      <div class="signal-item"><span style="color:var(--muted);font-size:0.76rem">API</span><span class="signal-val red">Reconnexion...</span></div>
+    </div>
+  `;
+  document.getElementById('articles-grid').innerHTML = `
+    <div style="color:var(--muted);font-size:0.83rem;padding:1rem;grid-column:1/-1">
+      Impossible de charger les articles. Cliquez sur <strong style="color:var(--red)">Actualiser</strong> pour réessayer.
+    </div>`;
+}
+
+function refreshContent() {
+  showLoading('Analyse des nouvelles sources...');
+  document.getElementById('articles-grid').innerHTML = ['', '', '', ''].map(() => `
+    <div class="article-card loading">
+      <div class="skeleton" style="width:80px;height:9px;margin-bottom:0.5rem"></div>
+      <div class="skeleton" style="width:90%;height:16px;margin-bottom:0.4rem"></div>
+      <div class="skeleton" style="width:70%;height:16px;margin-bottom:1rem"></div>
+      <div class="skeleton" style="width:100%;height:9px;margin-top:auto"></div>
+    </div>
+  `).join('');
+  setTimeout(() => {
+    hideLoading();
+    document.getElementById('last-updated').textContent = 'Mis à jour à ' +
+      new Date().toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    loadAIContent();
+  }, 900);
+}
+
+function showLoading(msg) {
+  document.getElementById('loader-text').textContent = msg || 'Chargement...';
+  const bar = document.getElementById('loader-bar-inner');
+  bar.style.animation = 'none';
+  bar.offsetHeight; // reflow
+  bar.style.animation = 'loadbar 1.2s ease forwards';
+  document.getElementById('loading-overlay').classList.add('active');
+}
+
+function hideLoading() {
+  document.getElementById('loading-overlay').classList.remove('active');
+}
+</script>
+</body>
+</html>

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, validator
+from pydantic import BaseModel, Field, field_validator
 from datetime import datetime
 from typing import List, Optional, Literal
 
@@ -40,7 +40,8 @@ class Event(BaseModel):
 
     viral_score: float = Field(ge=0, le=100)
 
-    @validator("keywords")
+    @field_validator("keywords")
+    @classmethod
     def keywords_not_empty(cls, v):
         if len(v) == 0:
             raise ValueError("keywords ne peut pas être vide")

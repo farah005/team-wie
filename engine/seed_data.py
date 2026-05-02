@@ -1,5 +1,4 @@
-# seed_data.py
-from database import create_tables, insert_post
+from engine.database import create_tables, insert_post
 
 create_tables()
 

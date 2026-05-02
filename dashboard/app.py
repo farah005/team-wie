@@ -594,4 +594,4 @@ st.markdown("""
 <div style="text-align:center;padding:20px 0 8px;font-size:11px;color:#444;border-top:1px solid #1e1e1e;margin-top:30px">
   📡 TNessnisa · Intelligence Sociale Tunisienne · ما نحكيوش برشا... أما نعرفو برشا
 </div>
-""", unsafe_allow_html=True)
+""", unsafe_allow_html=True) 
